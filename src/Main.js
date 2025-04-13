@@ -201,7 +201,7 @@ const Main = () => {
   return (
     <div>
       <h2 className="title">
-        {[..."MYWORDLECLONE"].map((letter, i) => {
+        {[..."WORDLECLONE"].map((letter, i) => {
           return <Tile key={i} letter={letter} state="absent" />;
         })}
       </h2>
