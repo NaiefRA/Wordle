@@ -151,6 +151,7 @@ const Main = () => {
     setPopup(false);
     setGameActive(true);
     setWordleWord(wordList[Math.floor(Math.random() * wordList.length)]);
+    window.location.reload();
   };
 
   useEffect(() => {
