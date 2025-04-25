@@ -3,127 +3,23 @@ import WordleRow from "./WordleRow";
 import Popup from "./Popup";
 import Tile from "./Tile";
 
-const wordList = [
-  "apple",
-  "grape",
-  "brick",
-  "crane",
-  "table",
-  "chair",
-  "light",
-  "flame",
-  "spine",
-  "brain",
-  "scale",
-  "drive",
-  "water",
-  "plant",
-  "shine",
-  "tiger",
-  "zebra",
-  "crown",
-  "eagle",
-  "brush",
-  "climb",
-  "drake",
-  "froze",
-  "glide",
-  "hover",
-  "jumpy",
-  "kneel",
-  "laugh",
-  "match",
-  "nerdy",
-  "orbit",
-  "plain",
-  "quilt",
-  "rider",
-  "snake",
-  "trick",
-  "union",
-  "vivid",
-  "wrist",
-  "xenon",
-  "yield",
-  "zesty",
-  "blush",
-  "cargo",
-  "dance",
-  "eject",
-  "flock",
-  "giant",
-  "hound",
-  "inbox",
-  "jewel",
-  "karma",
-  "latch",
-  "macho",
-  "noble",
-  "oxide",
-  "piano",
-  "quote",
-  "rough",
-  "smile",
-  "tulip",
-  "ultra",
-  "voter",
-  "widen",
-  "yacht",
-  "zebra",
-  "blame",
-  "cabin",
-  "ditch",
-  "epoch",
-  "fable",
-  "grain",
-  "hatch",
-  "ideal",
-  "judge",
-  "kneel",
-  "lemon",
-  "mango",
-  "night",
-  "opera",
-  "proud",
-  "quake",
-  "reign",
-  "shard",
-  "thorn",
-  "unite",
-  "voice",
-  "worry",
-  "xerox",
-  "yummy",
-  "zonal",
-  "acorn",
-  "beach",
-  "candy",
-  "daisy",
-  "earth",
-  "faith",
-  "glory",
-  "happy",
-  "igloo",
-  "joker",
-  "kitty",
-  "lunar",
-  "mirth",
-  "nudge",
-  "offer",
-  "punch",
-  "quirk",
-  "roast",
-  "sword",
-  "toast",
-  "usher",
-  "vague",
-  "whale",
-  "xylem",
-  "yodel",
-  "zappy",
-];
-
 const Main = () => {
+  const [wordList, setWordList] = useState(["Temps"]);
+
+  useEffect(() => {
+    fetch(`${process.env.PUBLIC_URL}/words.txt`)
+      .then((res) => res.text())
+      .then((data) => {
+        const words = data
+          .split("\n")
+          .map((word) => word.trim())
+          .filter(Boolean);
+        setWordList(words);
+        setWordleWord(words[Math.floor(Math.random() * words.length)]);
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
   const [guesses, setGuesses] = useState(["", "", "", "", "", ""]);
   const [currRow, setCurrRow] = useState(0);
   const [state, setState] = useState([
@@ -134,6 +30,7 @@ const Main = () => {
     "typing",
     "typing",
   ]);
+  const [lost, setLost] = useState(false);
   const [popup, setPopup] = useState(false);
   const [gameActive, setGameActive] = useState(true);
   const [wordleWord, setWordleWord] = useState(
@@ -178,6 +75,10 @@ const Main = () => {
       }
       if (letter === "ENTER") {
         if (guesses[currRow].length === 5) {
+          if (!wordList.includes(guesses[currRow].toLowerCase())) {
+            return;
+          }
+
           const newState = [...state];
           newState[currRow] = "enter";
           setState(newState);
@@ -185,6 +86,11 @@ const Main = () => {
             console.log("You Win");
             setGameActive(false);
 
+            setTimeout(() => setPopup(true), 500);
+          } else if (currRow === 5) {
+            console.log("You Lose");
+            setLost(true);
+            setGameActive(false);
             setTimeout(() => setPopup(true), 500);
           }
           if (currRow < 6) {
@@ -197,6 +103,7 @@ const Main = () => {
     document.addEventListener("keydown", handleKeydown);
 
     return () => document.removeEventListener("keydown", handleKeydown);
+    // eslint-disable-next-line
   }, [guesses, currRow, state, gameActive, wordleWord]);
 
   return (
@@ -231,9 +138,15 @@ const Main = () => {
         </div>
       </div>
       <div>
-        {popup && (
-          <Popup message="Congratulations 🎉" oc={() => setPopup(false)} />
-        )}
+        {popup &&
+          (lost ? (
+            <Popup
+              message={`You Lost! The word was ${wordleWord.toUpperCase()}`}
+              oc={() => setPopup(false)}
+            />
+          ) : (
+            <Popup message="Congratulations 🎉" oc={() => setPopup(false)} />
+          ))}
       </div>
     </div>
   );
